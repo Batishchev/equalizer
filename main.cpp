@@ -6,9 +6,9 @@
 #include <unistd.h>
 //#include <unistd.h> // for sleep()
 
-//#define FFTSIZE 128
-//#define STRINGSIZE 65
-//#define STRINGAMOUNT 30
+#define FFTSIZE 128
+#define STRINGSIZE 65
+#define STRINGAMOUNT 30
 
 using namespace std;
 
@@ -16,18 +16,25 @@ int main(int argc, char* argv[])
 {
     HSTREAM stream;
     char* filename;
-    float fft[128];
-    int current, i, j;
-    chtype result[1950];  //30*65
-    chtype* ptr;
-    int prevfft[64];
+    float fft[FFTSIZE];
+    int prevfft[FFTSIZE];
+    int currentFft;
+    int i,j;
+    chtype result[STRINGSIZE*STRINGAMOUNT];  //30*65
+    
+    //Colors support
     bool colors;
-    chtype runString[65];
-    int runStringPtr = 0;
+    
+    //Running filename support
+    chtype runString[STRINGSIZE];
+    int runStringStartIndex = 0;
+    
     int length;
     int pos;
     chtype progressString[53];
     int minutes,seconds, minutes2, seconds2, allseconds;
+    
+    chtype* ptr;
     
     
     for(i=0;i<30;i++)
@@ -108,11 +115,11 @@ int main(int argc, char* argv[])
         pos = BASS_ChannelGetPosition(stream, BASS_POS_BYTE);
         
         for(i=0;i<64;i++){
-            current = ceil(fabs(fft[i]) * 100);
-            if(current > 29)
-                current = 29;
+            currentFft = ceil(fabs(fft[i]) * 100);
+            if(currentFft > 29)
+                currentFft = 29;
             
-            if(current <= prevfft[i]){
+            if(currentFft <= prevfft[i]){
                 j = prevfft[i];
                 result[(29-j)*65+i] = ' ' | COLOR_PAIR(1);
                 prevfft[i] = j-1;
@@ -120,10 +127,10 @@ int main(int argc, char* argv[])
             }
             
             if(!colors){
-                for(j=current-1;j>=prevfft[i];j--)
+                for(j=currentFft-1;j>=prevfft[i];j--)
                     result[(29-j)*65+i] = '*';
             } else {
-                for(j=current-1;j>=prevfft[i];j--) {
+                for(j=currentFft-1;j>=prevfft[i];j--) {
                     if(j > 26)
                         result[(29-j)*65+i] = '*' | COLOR_PAIR(3);
                     else if(j>24)
@@ -133,15 +140,15 @@ int main(int argc, char* argv[])
                 }
             }
             
-            prevfft[i] = current;
+            prevfft[i] = currentFft;
         }
         
         move(30,0);
-        runStringPtr++;
-        if(runStringPtr > 64)
-            runStringPtr = 0;
-        mvaddchnstr(30, 0, &runString[runStringPtr], 65-runStringPtr-1);
-        mvaddchnstr(30, 65-runStringPtr-1, &runString[0], runStringPtr);
+        runStringStartIndex++;
+        if(runStringStartIndex > 64)
+            runStringStartIndex = 0;
+        mvaddchnstr(30, 0, &runString[runStringStartIndex], 65-runStringStartIndex-1);
+        mvaddchnstr(30, 65-runStringStartIndex-1, &runString[0], runStringStartIndex);
         
         //Прогресс бар
         move(31,0);
