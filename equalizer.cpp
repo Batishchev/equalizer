@@ -23,7 +23,7 @@ void equalizer::initFft() {
 void equalizer::initConsole() {
     if (!initscr()) {
         throw "Ошибка инициализации консоли.\n";
-        return 0;
+        return;
     }
     initColors();
 }
@@ -48,6 +48,8 @@ void equalizer::initFileName(char* filename) {
 
 void equalizer::initRunString() {
     int i, j;
+    
+    runStringStartIndex = 0;
 
     for (i = 0; i < STRINGSIZE; i++) {
         if (filename[i] == '\0') {
@@ -64,21 +66,21 @@ void equalizer::initRunString() {
 void equalizer::initBASS() {
     if (!BASS_Init(-1, 44100, 0, 0, NULL)) {
         throw "Ошибка инициализации BASS.\n";
-        return 0;
+        return;
     }
     
     stream = BASS_StreamCreateFile(FALSE, filename, 0, 0, 0);
     
     if (!stream) {
         throw "Ошибка при открытии файла.\n";
-        return 0;
+        return;
     }
 }
 
 void equalizer::play() {
     if(!BASS_ChannelPlay(stream, FALSE)) {
         throw "Ошибка воспроизведения файла.\n";
-        return 0;
+        return;
     }
 }
 
@@ -91,6 +93,8 @@ equalizer::equalizer(char* filename) {
 }
 
 equalizer::~equalizer() {
-
+    BASS_ChannelStop(stream);
+    BASS_StreamFree(stream); 
+    endwin();
 }
 
