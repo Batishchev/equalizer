@@ -6,6 +6,10 @@
 #include <unistd.h>
 //#include <unistd.h> // for sleep()
 
+//#define FFTSIZE 128
+//#define STRINGSIZE 65
+//#define STRINGAMOUNT 30
+
 using namespace std;
 
 int main(int argc, char* argv[])
@@ -20,6 +24,11 @@ int main(int argc, char* argv[])
     bool colors;
     chtype runString[65];
     int runStringPtr = 0;
+    int length;
+    int pos;
+    chtype progressString[53];
+    int minutes,seconds, minutes2, seconds2, allseconds;
+    
     
     for(i=0;i<30;i++)
         for(j=0;j<65;j++){
@@ -87,9 +96,16 @@ int main(int argc, char* argv[])
         refresh();
         return 0;
     }
-        
+    int pr;
+    length = BASS_ChannelGetLength(stream, BASS_POS_BYTE);
+    seconds2 = BASS_ChannelBytes2Seconds(stream, length);
+    while(seconds2 >= 60){
+        seconds2-=60;
+        minutes2++;
+    }
     while (BASS_ChannelIsActive(stream) != BASS_ACTIVE_STOPPED) {
         BASS_ChannelGetData(stream, fft, BASS_DATA_FFT256);
+        pos = BASS_ChannelGetPosition(stream, BASS_POS_BYTE);
         
         for(i=0;i<64;i++){
             current = ceil(fabs(fft[i]) * 100);
@@ -124,8 +140,30 @@ int main(int argc, char* argv[])
         runStringPtr++;
         if(runStringPtr > 64)
             runStringPtr = 0;
-        mvaddchnstr(30, 0, &runString[runStringPtr], 65-runStringPtr);
-        mvaddchnstr(30, 65-runStringPtr, &runString[0], runStringPtr);
+        mvaddchnstr(30, 0, &runString[runStringPtr], 65-runStringPtr-1);
+        mvaddchnstr(30, 65-runStringPtr-1, &runString[0], runStringPtr);
+        
+        //Прогресс бар
+        move(31,0);
+        pr = floor((float(pos) / float(length)) * 100);
+        if(pr%2 == 0){
+            progressString[0] = '|';
+            pr = int(pr/2)+1;
+            for(i=1;i<pr;i++)
+                progressString[pr] = '=';
+            progressString[i] = '>' | COLOR_PAIR(2);
+            for(i=i+1;i<51;i++)
+                progressString[i] = '=';
+            progressString[51] = '|';
+            progressString[52] = '\0';
+            allseconds = floor(BASS_ChannelBytes2Seconds(stream, pos));
+            seconds = allseconds%60;
+            minutes = ceil(allseconds/60);
+            addchstr(progressString);
+            move(31,52);
+            printw("%2d:%2d/%2d:%2d|",minutes, seconds,minutes2, seconds2);
+        }
+
         for(i=29;i>=0;i--){
             ptr = &result[i*65];
             move(i,0);
