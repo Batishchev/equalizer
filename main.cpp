@@ -1,8 +1,6 @@
 //#include <iostream>
 #include <stdlib.h>
 #include <cmath>
-#include <bass.h>
-#include <ncurses.h>
 #include <unistd.h>
 //#include <unistd.h> // for sleep()
 
@@ -36,53 +34,14 @@ int main(int argc, char* argv[])
     
     chtype* ptr;
     
-    
-    for(i=0;i<30;i++)
-        for(j=0;j<65;j++){
-            result[65*i+j] = ' ';
-            if(j == 64)
-                result[65*i+j] = '\n';
-        }
-    result[1949] = '\0';
-    
-    for(j=0;j<64;j++)
-        prevfft[i] = 0;
-    
     if(argc != 2) {
         addstr( "Программа принимает 1 аргумент - имя проигрываемого wav файла.\n" );
         refresh();
         return 0;
     }
     
-    if(!initscr()){
-        addstr( "Ошибка инициализации консоли.\n");
-        refresh();
-        return 0;
-    }
-    
-    colors = has_colors();
-    
-    if(colors){
-        start_color();
-
-        init_pair(1, COLOR_GREEN, COLOR_BLACK);
-        init_pair(2, COLOR_YELLOW, COLOR_BLACK);
-        init_pair(3, COLOR_RED, COLOR_BLACK);
-    }
-    
     filename = argv[1];
     
-    for(i=0;i<64;i++){
-        if(filename[i] == '\0'){
-            for(j=i;j<64;j++)
-                runString[j] = ' ';
-            break;
-        }
-        else
-            runString[i] = filename[i];
-    }
-        
-    runString[64] = '\0';
     
     if (!BASS_Init(-1, 44100, 0, 0, NULL)) {
         addstr( "Ошибка инициализации BASS.\n");
