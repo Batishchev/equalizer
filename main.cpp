@@ -18,6 +18,8 @@ int main(int argc, char* argv[])
     chtype* ptr;
     int prevfft[64];
     bool colors;
+    chtype runString[65];
+    int runStringPtr = 0;
     
     for(i=0;i<30;i++)
         for(j=0;j<65;j++){
@@ -54,6 +56,18 @@ int main(int argc, char* argv[])
     
     filename = argv[1];
     
+    for(i=0;i<64;i++){
+        if(filename[i] == '\0'){
+            for(j=i;j<64;j++)
+                runString[j] = ' ';
+            break;
+        }
+        else
+            runString[i] = filename[i];
+    }
+        
+    runString[64] = '\0';
+    
     if (!BASS_Init(-1, 44100, 0, 0, NULL)) {
         addstr( "Ошибка инициализации BASS.\n");
         refresh();
@@ -73,7 +87,7 @@ int main(int argc, char* argv[])
         refresh();
         return 0;
     }
-    
+        
     while (BASS_ChannelIsActive(stream) != BASS_ACTIVE_STOPPED) {
         BASS_ChannelGetData(stream, fft, BASS_DATA_FFT256);
         
@@ -106,10 +120,16 @@ int main(int argc, char* argv[])
             prevfft[i] = current;
         }
         
+        move(30,0);
+        runStringPtr++;
+        if(runStringPtr > 64)
+            runStringPtr = 0;
+        mvaddchnstr(30, 0, &runString[runStringPtr], 65-runStringPtr);
+        mvaddchnstr(30, 65-runStringPtr, &runString[0], runStringPtr);
         for(i=29;i>=0;i--){
             ptr = &result[i*65];
             move(i,0);
-            addchnstr(ptr, 65);
+            addchnstr(ptr, 64);
         }
         refresh();
         usleep(100000);
