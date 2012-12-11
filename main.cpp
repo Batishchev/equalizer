@@ -14,8 +14,10 @@ int main(int argc, char* argv[])
     char* filename;
     float fft[128];
     int current, i, j;
-    char result[1950];  //30*65
+    chtype result[1950];  //30*65
+    chtype* ptr;
     int prevfft[64];
+    bool colors;
     
     for(i=0;i<30;i++)
         for(j=0;j<65;j++){
@@ -38,6 +40,16 @@ int main(int argc, char* argv[])
         addstr( "Ошибка инициализации консоли.\n");
         refresh();
         return 0;
+    }
+    
+    colors = has_colors();
+    
+    if(colors){
+        start_color();
+
+        init_pair(1, COLOR_GREEN, COLOR_BLACK);
+        init_pair(2, COLOR_YELLOW, COLOR_BLACK);
+        init_pair(3, COLOR_RED, COLOR_BLACK);
     }
     
     filename = argv[1];
@@ -72,19 +84,33 @@ int main(int argc, char* argv[])
             
             if(current <= prevfft[i]){
                 j = prevfft[i];
-                result[(29-j)*65+i] = ' ';
+                result[(29-j)*65+i] = ' ' | COLOR_PAIR(1);
                 prevfft[i] = j-1;
                 continue;
             }
             
-            for(j=current-1;j>=prevfft[i];j--)
-                result[(29-j)*65+i] = '*';
+            if(!colors){
+                for(j=current-1;j>=prevfft[i];j--)
+                    result[(29-j)*65+i] = '*';
+            } else {
+                for(j=current-1;j>=prevfft[i];j--) {
+                    if(j > 26)
+                        result[(29-j)*65+i] = '*' | COLOR_PAIR(3);
+                    else if(j>24)
+                        result[(29-j)*65+i] = '*' | COLOR_PAIR(2);
+                    else
+                        result[(29-j)*65+i] = '*' | COLOR_PAIR(1);
+                }
+            }
             
             prevfft[i] = current;
         }
         
-        move(0,0);
-        printw(result);
+        for(i=29;i>=0;i--){
+            ptr = &result[i*65];
+            move(i,0);
+            addchnstr(ptr, 65);
+        }
         refresh();
         usleep(100000);
     }
