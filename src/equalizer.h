@@ -2,7 +2,7 @@
 #define	EQUALIZER_H
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-#include <ncurses.h>
+#include <curses.h>
 #else
 #include <ncurses.h>
 #endif

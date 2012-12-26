@@ -1,7 +1,7 @@
 #include "audio.h"
 
 audio::audio() {
-	if (!BASS_Init(-1, 44100, 0, (void*) 0, (void*) 0)) {
+	if (!BASS_Init(-1, 44100, 0, NULL, NULL)) {
 		throw "Ошибка инициализации BASS";
 		return;
 	}

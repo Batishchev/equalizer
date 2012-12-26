@@ -6,7 +6,8 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
 #include <windows.h>
-#define SLEEP Sleep(1000);
+#include <cstddef>
+#define SLEEP Sleep(100);
 #else
 #include <unistd.h>
 #define SLEEP usleep(100000);
